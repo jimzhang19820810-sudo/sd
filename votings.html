@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>发言与投票系统</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+        }
+        .speaker, .voter {
+            width: 40%;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .voter input {
+            margin: 5px;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 1.5em;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>发言与投票系统</h1>
+
+    <div class="container">
+        <!-- 发言者区域 -->
+        <div class="speaker">
+            <h2>发言者</h2>
+            <textarea id="speech" rows="5" cols="40" placeholder="请输入发言内容..."></textarea>
+            <br>
+            <button id="submitSpeech" onclick="submitSpeech()">提交发言</button>
+        </div>
+
+        <!-- 投票区域 -->
+        <div class="voter">
+            <h2>投票人</h2>
+            <p>请对发言者打分 (1-10分)：</p>
+            <div id="voterSection" class="hidden">
+                <label for="vote">打分:</label>
+                <input type="number" id="vote" min="1" max="10" required>
+                <br>
+                <button onclick="submitVote()">提交投票</button>
+            </div>
+            <div id="result"></div>
+        </div>
+    </div>
+
+    <script>
+        let votes = [];
+        let speechSubmitted = false;
+        let voterCount = 0;
+
+        function submitSpeech() {
+            let speechContent = document.getElementById("speech").value;
+            if (!speechContent.trim()) {
+                alert("请先输入发言内容！");
+                return;
+            }
+            speechSubmitted = true;
+            alert("发言已提交，请进行评分！");
+            document.getElementById("speech").disabled = true; // 禁止发言者再次编辑
+            document.getElementById("submitSpeech").disabled = true; // 禁止发言者提交
+            document.getElementById("voterSection").classList.remove("hidden"); // 显示投票区域
+        }
+
+        function submitVote() {
+            if (!speechSubmitted) {
+                alert("请先提交发言！");
+                return;
+            }
+            let vote = document.getElementById("vote").value;
+            if (vote < 1 || vote > 10) {
+                alert("请给出1-10的评分！");
+                return;
+            }
+            votes.push(parseInt(vote));
+            document.getElementById("vote").value = ""; // 清空投票输入框
+            voterCount++;
+
+            // 当所有8个投票者评分完毕，计算平均分
+            if (voterCount === 8) {
+                let total = votes.reduce((sum, score) => sum + score, 0);
+                
+                // 去除最大值和最小值
+                let max = Math.max(...votes);
+                let min = Math.min(...votes);
+                let filteredVotes = votes.filter(vote => vote !== max && vote !== min);
+
+                // 如果去掉最大值和最小值后，仍有剩余评分
+                let average = filteredVotes.reduce((sum, score) => sum + score, 0) / filteredVotes.length;
+                
+                document.getElementById("result").innerHTML = `评分完成！去除最高和最低分后，发言者的平均分为: ${average.toFixed(2)}`;
+                document.getElementById("voterSection").classList.add("hidden"); // 隐藏投票区域
+            }
+        }
+    </script>
+
+</body>
+</html>
